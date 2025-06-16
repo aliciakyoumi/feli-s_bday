@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <link rel="icon" type="image/png" href="bday.png" />
   <title>happy birthday my lil sisterrr❤️</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="https://i.ibb.co.com/hXZsYxZ/heart.png">
+  <link rel="icon" href="https://i.ibb.co/hXZsYxZ/heart.png">
   <style>
     * {
       box-sizing: border-box;
@@ -20,7 +20,6 @@
       background-color: #ffffff;
       color: #1e3a8a;
       font-family: 'Poppins', sans-serif;
-      overflow: hidden;
     }
 
     .page {
@@ -38,6 +37,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 1s ease;
+      overflow: auto;
     }
 
     .page.active {
@@ -69,7 +69,7 @@
       font-size: 1.2rem;
       cursor: pointer;
       margin-top: 30px;
-      transition: background 0.3s;
+      transition: background 0.5s;
     }
 
     .button:hover {
@@ -94,14 +94,34 @@
       height: auto;
     }
 
+    /* BARU: Kontainer untuk membungkus konten di page3 agar tetap di tengah */
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
     .letter {
-      white-space: pre-line;
-      font-size: 1.1rem;
-      max-width: 600px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: pre;
+      font-size: 1.3rem;
+      /* max-width dihapus agar tidak konflik, lebar diatur oleh konten */
       text-align: left;
       border-left: 3px solid #1e3a8a;
-      padding-left: 15px;
+      padding: 5px;
       min-height: 200px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .letter-gif {
+      width: 170px;
+      height: auto;
+      margin: 0;
+      flex-shrink: 0;
     }
 
     .falling {
@@ -113,13 +133,12 @@
       z-index: 9999;
     }
 
-    .pink-heart {
-      color: #da32c4;
-    }
+    .pink-heart { color: #da32c4; }
+    .yellow-star { color: #facc15; }
+    .candy { color: #34d399; }
+    .gift { color: #ef4444; }
+    .yay { color: #60a5fa; }
 
-    .yellow-star {
-      color: #facc15;
-    }
 
     @keyframes fall {
       to {
@@ -129,21 +148,16 @@
     }
 
     @media (max-width: 600px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-
-      h2 {
-        font-size: 1.5rem;
-      }
-
+      h1 { font-size: 1.8rem; }
+      h2 { font-size: 1.5rem; }
       .button {
         padding: 10px 20px;
-        font-size: 1rem;
+        font-size: 1.2rem;
       }
-
       .letter {
-        font-size: 1rem;
+        font-size: 1.3rem;
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -167,8 +181,13 @@
   </div>
 
 <div class="page" id="page3" style="font-family: 'Dancing Script', cursive;">
-    <h2>My dearest sister ˶ᵔ ᵕ ᵔ˶ ♡ </h2>
-    <div class="letter" id="letterText"></div>
+    <div class="content-container">
+      <h2>My dearest sister ˶ᵔ ᵕ ᵔ˶ ♡ </h2>
+      <div class="letter">
+        <div id="letterText"></div>
+        <img src="memewolf.gif" alt="cute gif" class="letter-gif">
+      </div>
+    </div>
 </div>
 
   <audio id="bg-music" src="Party.mp3" autoplay loop muted></audio>
@@ -191,12 +210,17 @@ with all love,
       const next = document.getElementById(`page${pageNum}`);
       next.classList.add('active');
 
+      if (next.scrollTop > 0) {
+        next.scrollTop = 0;
+      }
+
       if (pageNum === 3) {
         const music = document.getElementById("bg-music");
         music.muted = false;
         music.play().catch(e => console.log("Autoplay blocked:", e));
 
         confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        document.getElementById('letterText').innerHTML = ''; 
         typeText(fullLetter, document.getElementById('letterText'), 25);
         startFallingSymbols();
       }
@@ -216,15 +240,26 @@ with all love,
     }
 
     function startFallingSymbols() {
-      setInterval(() => {
+      if (window.fallingSymbolsInterval) {
+        clearInterval(window.fallingSymbolsInterval);
+      }
+
+      const symbols = ['🩷', '⭐', '🍬', '🎁', '🥳'];
+      const symbolClasses = ['pink-heart', 'yellow-star', 'candy', 'gift', 'yay'];
+
+      window.fallingSymbolsInterval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * symbols.length);
+        const randomSymbol = symbols[randomIndex];
+        const randomClass = symbolClasses[randomIndex];
+
         const el = document.createElement('div');
-        el.classList.add('falling');
-        const isHeart = Math.random() < 0.5;
-        el.innerText = isHeart ? '🩷' : '⭐';
-        el.classList.add(isHeart ? 'pink-heart' : 'yellow-star');
+        el.classList.add('falling', randomClass);
+        el.innerText = randomSymbol;
+        
         el.style.left = Math.random() * 100 + 'vw';
         el.style.animationDuration = (3 + Math.random() * 2) + 's';
         document.body.appendChild(el);
+        
         setTimeout(() => el.remove(), 6000);
       }, 300);
     }
